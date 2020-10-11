@@ -716,6 +716,7 @@ GameObject:
   - component: {fileID: 3099895861830607419}
   - component: {fileID: 3099895861830607416}
   - component: {fileID: 2137328137}
+  - component: {fileID: 4437741083410786210}
   m_Layer: 0
   m_Name: Missle Panel
   m_TagString: Untagged
@@ -821,6 +822,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   missleIndex: 0
   gameManager: {fileID: 0}
+--- !u!225 &4437741083410786210
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3099895861830607414}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &3295643252466677246
 GameObject:
   m_ObjectHideFlags: 0

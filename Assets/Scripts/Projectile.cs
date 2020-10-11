@@ -52,7 +52,7 @@ public class Projectile : MonoBehaviour
         implodeTime -= Time.deltaTime;
         if (implodeTime <= 0)
         {
-            Destroy(gameObject);
+            DestroyBullet();
         }
     }
 
@@ -69,7 +69,7 @@ public class Projectile : MonoBehaviour
         {
             rb.AddForce((transform.position - other.transform.position).normalized * GameConstants.pullForce, ForceMode.Impulse);
         }
-        Destroy(gameObject);
+        DestroyBullet();
     }
 
     void CreatePush(Collider other)
@@ -87,7 +87,7 @@ public class Projectile : MonoBehaviour
         //}
 
         other.GetComponent<Rigidbody>().AddForce((other.transform.position - transform.position).normalized * GameConstants.pushForce, ForceMode.Impulse);
-        Destroy(gameObject);
+        DestroyBullet();
     }
 
     void CreateExplode(Collider other)
@@ -99,14 +99,13 @@ public class Projectile : MonoBehaviour
         ragDoll.transform.rotation = refTransform.rotation;
         ragDoll.transform.localScale = refTransform.localScale;
 
-        Debug.Log("Exploding");
         // lower explosion point to make character bounce up
         Vector3 explosionPoint = transform.position - new Vector3(0f, 1f, 0f);
         foreach (Rigidbody rb in ragDoll.GetComponentsInChildren<Rigidbody>())
         {
             rb.AddForce((other.transform.position - explosionPoint).normalized * GameConstants.explosionForce, ForceMode.Impulse); ;
         }
-        Destroy(gameObject);
+        DestroyBullet();
     }
 
     void CreateImplode(Collider other)
@@ -157,10 +156,15 @@ public class Projectile : MonoBehaviour
             ragDoll.transform.localScale = refTransform.localScale;
             targetRagdoll = ragDoll;
             Destroy(refTransform.gameObject);
-            Destroy(gameObject);
+            DestroyBullet();
         }
     }
 
+    void DestroyBullet()
+    {
+        gameManager.SwitchState(GameState.AttackComplete);
+        gameObject.SetActive(false);
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -194,31 +198,8 @@ public class Projectile : MonoBehaviour
     public void ChangeProjectileMaterial(ProjectileColour newColour)
     {
         projectileColour = newColour;
-        
-        switch(newColour)
-        {
-            case ProjectileColour.Blue:
-                baseColor = Color.blue;
-                break;
-            case ProjectileColour.Green:
-                baseColor = Color.green;
-                break;
-            case ProjectileColour.Grey:
-                baseColor = Color.gray;
-                break;
-            case ProjectileColour.Orange:
-                baseColor = new Color(1f, 0.5f, 0f);
-                break;
-            case ProjectileColour.Pink:
-                baseColor = new Color(1f, 0.08f, 0.58f);
-                break;
-            case ProjectileColour.Red:
-                baseColor = Color.red;
-                break;
-            case ProjectileColour.Yellow:
-                baseColor = Color.yellow;
-                break;
-        }
+
+        baseColor = gameManager.GetColor(newColour);
 
         meshRenderer.material = gameManager.materials[(int)newColour];
         // Do Projectile Type Things
