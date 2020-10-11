@@ -21,7 +21,8 @@ public class Projectile : MonoBehaviour
 
     GameObject targetRagdoll;
 
-    private void Start()
+    GameObject ignitionEffect;
+    private void Awake()
     {
         gameManager = FindObjectOfType<GameManager>();
         _rigidbody = GetComponent<Rigidbody>();
@@ -162,12 +163,15 @@ public class Projectile : MonoBehaviour
 
     void DestroyBullet()
     {
+        ignitionEffect.GetComponent<IgnitionScript>().FadeAway();
         gameManager.WaitAndSwitchState(GameState.AttackComplete, 1f);
         gameObject.SetActive(false);
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        gameManager.CameraShake(1.0f, 0.5f);
+
         switch(projectileType)
         {
             case ProjectileType.Puller:
@@ -203,6 +207,14 @@ public class Projectile : MonoBehaviour
 
         meshRenderer.material = gameManager.materials[(int)newColour];
         // Do Projectile Type Things
+    }
+
+    public void WarmUp()
+    {
+        ignitionEffect = gameManager.BeginEffect(EffectTypes.Ignition, transform.position, -transform.forward);
+        ignitionEffect.GetComponent<IgnitionScript>().SetColor(gameManager.GetColor(projectileColour));
+        ignitionEffect.transform.SetParent(transform, true);
+        ignitionEffect.transform.localRotation = Quaternion.Euler(Vector3.zero);
     }
 
     public void FireMyself()

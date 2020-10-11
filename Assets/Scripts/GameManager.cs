@@ -26,6 +26,15 @@ public class GameManager : MonoBehaviour
     public CanvasGroup scrollGroup;
     List<GameObject> ragDollPool;
 
+    public GameObject ignitionPrefab;
+    public GameObject explosionPrefab;
+    public GameObject implosionPrefab;
+
+    public Transform ignitionEffectsPool;
+    public Transform explosionEffectsPool;
+    public Transform implosionEffectsPool;
+    public Transform worldEffects;
+
     GameState currentState = GameState.Select;
     int currentFire;
     int firedMissles = 0;
@@ -34,6 +43,22 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        for (int i = 0; i <= GameConstants.EffectPoolSize; i++)
+        {
+            GameObject newShieldhit = Instantiate(ignitionPrefab, ignitionEffectsPool);
+            newShieldhit.SetActive(false);
+        }
+        for (int i = 0; i <= GameConstants.EffectPoolSize; i++)
+        {
+            GameObject newBulletHit = Instantiate(explosionPrefab, explosionEffectsPool);
+            newBulletHit.SetActive(false);
+        }
+        for (int i = 0; i <= GameConstants.EffectPoolSize; i++)
+        {
+            GameObject smokeEffect = Instantiate(implosionPrefab, implosionEffectsPool);
+            smokeEffect.SetActive(false);
+        }
+
         cameraTransform = FindObjectOfType<Camera>().transform.parent;
         CreateRagdollPool();
         cameraTransform.transform.position = GameConstants.selectPos;
@@ -114,6 +139,7 @@ public class GameManager : MonoBehaviour
                 break;
             case GameState.WindUp:
                 {
+                    missileObjects[currentFire].GetComponent<Projectile>().WarmUp();
                     cameraTransform.DOMove(GameConstants.windUpPos, GameConstants.windUpTransition);
                     cameraTransform.DORotate(GameConstants.windUpRot, GameConstants.windUpTransition).OnComplete(() => {
                         SwitchState(GameState.PerformAttack);
@@ -147,7 +173,7 @@ public class GameManager : MonoBehaviour
                         // Fade main section on complete and resize horizontal layout
                         misslePanels[currentFire].gameObject.SetActive(false);
                         RectTransform scrollRect = scrollGroup.GetComponentInChildren<HorizontalLayoutGroup>().GetComponent<RectTransform>();
-                        scrollRect.sizeDelta = new Vector2(400 * (misslePanels.Count - firedMissles), 160);
+                        scrollRect.sizeDelta = new Vector2(400 * (misslePanels.Count - firedMissles), 0);
                         scrollGroup.DOFade(0f, GameConstants.scrollFade/2);
                     });
                 }
@@ -248,26 +274,92 @@ public class GameManager : MonoBehaviour
         {
             case ProjectileColour.Blue:
                 return Color.blue;
-                break;
             case ProjectileColour.Green:
                 return Color.green;
-                break;
             case ProjectileColour.Grey:
                 return Color.gray;
-                break;
             case ProjectileColour.Orange:
                 return new Color(1f, 0.5f, 0f);
-                break;
             case ProjectileColour.Pink:
                 return new Color(1f, 0.08f, 0.58f);
-                break;
             case ProjectileColour.Red:
                 return Color.red;
-                break;
             case ProjectileColour.Yellow:
                 return Color.yellow;
-                break;
         }
         return Color.gray;
+    }
+
+    public void CameraShake(float duration, float strength)
+    {
+        Camera.main.DOShakePosition(duration, strength * 3, 10, 90, true);
+    }
+
+    public void ReturnEffectToPool(GameObject effectToStore, GameConstants.EffectTypes effectType)
+    {
+        if (effectType == GameConstants.EffectTypes.Ignition)
+        {
+            // Return to normal bullet pool
+            effectToStore.transform.SetParent(ignitionEffectsPool);
+        }
+        else if (effectType == GameConstants.EffectTypes.Explosion)
+        {
+            // Return to shotgun bullet pool
+            effectToStore.transform.SetParent(explosionEffectsPool);
+        }
+        else if (effectType == GameConstants.EffectTypes.Implosion)
+        {
+            // Return to laser bullet pool
+            effectToStore.transform.SetParent(implosionEffectsPool);
+        }
+
+        effectToStore.gameObject.SetActive(false);
+        effectToStore.transform.localScale = Vector3.one;
+        effectToStore.transform.position = Vector3.zero;
+    }
+
+    public GameObject BeginEffect(GameConstants.EffectTypes effectType, Vector3 position, Vector3 lookAt)
+    {
+        GameObject effectObject = null;
+
+        switch (effectType)
+        {
+            // Get First Child, set parent to gunport (to remove from respective pool)
+            case GameConstants.EffectTypes.Implosion:
+                effectObject = implosionEffectsPool.GetComponentInChildren<ImplosionScript>(true).gameObject;
+                break;
+            case GameConstants.EffectTypes.Explosion:
+                effectObject = explosionEffectsPool.GetComponentInChildren<ExplosionScript>(true).gameObject;
+                break;
+            case GameConstants.EffectTypes.Ignition:
+                effectObject = ignitionEffectsPool.GetComponentInChildren<IgnitionScript>(true).gameObject;
+                break;
+        }
+
+        //bulletObject.transform.SetParent(worldBullets);
+        //bulletObject.transform.position = gunPort.transform.position;
+        //// Return bullet and let GunPort handle how to fire and set initial velocities
+        //return bulletObject;
+        effectObject.transform.SetParent(worldEffects);
+        effectObject.transform.position = new Vector3(position.x, position.y, position.z);
+        effectObject.transform.up = new Vector3(lookAt.x, lookAt.y, lookAt.z);
+
+        effectObject.SetActive(true);
+
+        switch (effectType)
+        {
+            // Get First Child, set parent to gunport (to remove from respective pool)
+            case GameConstants.EffectTypes.Ignition:
+                effectObject.GetComponent<IgnitionScript>().FadeIn();
+                break;
+            case GameConstants.EffectTypes.Explosion:
+                effectObject.GetComponent<ExplosionScript>().FadeIn();
+                break;
+            case GameConstants.EffectTypes.Implosion:
+                effectObject.GetComponent<ImplosionScript>().FadeIn();
+                break;
+        }
+
+        return effectObject;
     }
 }

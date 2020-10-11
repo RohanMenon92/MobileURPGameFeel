@@ -10,11 +10,12 @@ public class MisslePanelUI : MonoBehaviour
 {
     public int missleIndex;
 
-    public GameManager gameManager;
+    GameManager gameManager;
 
     // Start is called before the first frame update
     void Start()
     {
+        gameManager = FindObjectOfType<GameManager>();
         ChangeMissleType(GetComponentsInChildren<TMP_Dropdown>()[0]);
         ChangeMaterialType(GetComponentsInChildren<TMP_Dropdown>()[1]);
     }

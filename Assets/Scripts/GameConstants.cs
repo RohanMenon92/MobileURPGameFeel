@@ -12,6 +12,12 @@ public class GameConstants
         Exploder,
         MultiHit
     }
+    public enum EffectTypes
+    {
+        Ignition,
+        Explosion,
+        Implosion
+    }
 
     public enum ProjectileColour
     {
@@ -25,6 +31,7 @@ public class GameConstants
     }
 
     public static int RagDollCount = 6;
+    public static int EffectPoolSize = 20;
 
     public static float pullForce = 1.0f;
     public static float pushForce = 15.0f;
@@ -32,6 +39,8 @@ public class GameConstants
     public static float implosionForce = 10.0f;
     public const float multiHitForce = 3.0f;
     public const float multiHitTime = 0.5f;
+
+    public const float effectsTime = 1.0f;
 
     // UI Values
     public static float scrollFade = 1f;
