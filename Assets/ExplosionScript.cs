@@ -32,7 +32,7 @@ public class ExplosionScript : MonoBehaviour
         effectSequence = DOTween.Sequence();
         effectSequence.Insert(0f, DOTween.To(() => visualEffect.GetFloat("Rate"), x => visualEffect.SetFloat("Rate", x), 1.0f, GameConstants.effectsTime * 0.2f));
         effectSequence.Append(DOTween.To(() => visualEffect.GetFloat("Rate"), x => visualEffect.SetFloat("Rate", x), 0f, GameConstants.effectsTime * 0.2f).SetDelay(GameConstants.effectsTime * 0.6f));
-        effectSequence.AppendInterval(2.0f);
+        effectSequence.AppendInterval(0.5f);
         effectSequence.OnComplete(() =>
         {
             FadeAway();

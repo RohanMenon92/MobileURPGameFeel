@@ -201,7 +201,7 @@ public class Projectile : MonoBehaviour
     void DestroyBullet()
     {
         ignitionEffect.GetComponent<IgnitionScript>().FadeAway();
-        gameManager.WaitAndSwitchState(GameState.AttackComplete, 1f);
+        gameManager.WaitAndSwitchState(GameState.Select, 1f);
         gameObject.SetActive(false);
     }
 
@@ -209,7 +209,7 @@ public class Projectile : MonoBehaviour
     {
         bool largeShake = projectileType == ProjectileType.Exploder || projectileType == ProjectileType.Imploder;
         gameManager.CameraShake(largeShake ? 1.0f : 0.25f, largeShake ? 0.75f : 0.25f);
-
+        gameManager.SwitchState(GameState.AttackComplete);
         switch (projectileType)
         {
             case ProjectileType.Puller:

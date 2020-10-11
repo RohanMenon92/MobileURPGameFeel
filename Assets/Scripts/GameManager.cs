@@ -154,10 +154,7 @@ public class GameManager : MonoBehaviour
             case GameState.AttackComplete:
                 {
                     cameraTransform.DOMove(GameConstants.completeAPos, GameConstants.windUpTransition);
-                    cameraTransform.DORotate(GameConstants.competeARot, GameConstants.windUpTransition).OnComplete(() => {
-                        SwitchState(GameState.Select);
-                    });
-
+                    cameraTransform.DORotate(GameConstants.competeARot, GameConstants.windUpTransition);
                 }
                 break;
         }
