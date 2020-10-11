@@ -45,6 +45,7 @@ public class GameConstants
     // UI Values
     public static float scrollFade = 1f;
     public static float windUpTransition = 1.5f;
+    public static float attackCompleteTransition = 1f;
     public static float colorTransition = 1.5f;
 
     public static Vector3 selectPos = new Vector3(-0.3f, 3f , 7f);

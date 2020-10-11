@@ -35,10 +35,16 @@ public class GameManager : MonoBehaviour
     public Transform implosionEffectsPool;
     public Transform worldEffects;
 
+    public bool slowmo;
+
     GameState currentState = GameState.Select;
     int currentFire;
     int firedMissles = 0;
     Transform cameraTransform;
+
+    Transform hitTarget;
+    bool attackCameraMoveComplete = false;
+
 
     // Start is called before the first frame update
     void Start()
@@ -68,6 +74,11 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         OnProcessState(currentState);
+    }
+
+    public void SetSlowMo(bool setVal)
+    {
+        slowmo = setVal;
     }
 
     // FSM region
@@ -129,11 +140,10 @@ public class GameManager : MonoBehaviour
             case GameState.Select:
                 {
                     scrollGroup.interactable = true;
-                    scrollGroup.DOFade(1f, GameConstants.scrollFade);
-                    cameraTransform.DOMove(GameConstants.selectPos, GameConstants.scrollFade);
-                    cameraTransform.DORotate(GameConstants.selectRot, GameConstants.scrollFade).OnComplete(() =>
-                    {
-
+                    scrollGroup.transform.DOScale(1f, GameConstants.scrollFade).SetEase(Ease.InOutBack);
+                    scrollGroup.DOFade(1f, GameConstants.scrollFade).OnComplete(() => {
+                        cameraTransform.DOMove(GameConstants.selectPos, GameConstants.scrollFade);
+                        cameraTransform.DORotate(GameConstants.selectRot, GameConstants.scrollFade);
                     });
                 }
                 break;
@@ -153,12 +163,30 @@ public class GameManager : MonoBehaviour
                 break;
             case GameState.AttackComplete:
                 {
-                    cameraTransform.DOMove(GameConstants.completeAPos, GameConstants.windUpTransition);
-                    cameraTransform.DORotate(GameConstants.competeARot, GameConstants.windUpTransition);
+                    cameraTransform.DOMove(GameConstants.completeAPos, GameConstants.attackCompleteTransition);
+                    cameraTransform.DORotate(GameConstants.competeARot, GameConstants.attackCompleteTransition).OnComplete(() => {
+                        attackCameraMoveComplete = true;
+                    });
                 }
                 break;
         }
     }
+
+    void SlowMoStart()
+    {
+        if(!slowmo)
+        {
+            return;
+        }
+        Time.timeScale = 0.2f;
+        Time.fixedDeltaTime = 0.02F * Time.timeScale;
+    }
+    void SlowMoStop()
+    {
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = 0.02F;
+    }
+
     void OnExitState(GameState stateExit)
     {
         switch (stateExit)
@@ -166,11 +194,13 @@ public class GameManager : MonoBehaviour
             case GameState.Select:
                 {
                     scrollGroup.interactable = false;
+
                     misslePanels[currentFire].DOFade(0f, GameConstants.scrollFade / 2).OnComplete(() => {
                         // Fade main section on complete and resize horizontal layout
                         misslePanels[currentFire].gameObject.SetActive(false);
                         RectTransform scrollRect = scrollGroup.GetComponentInChildren<HorizontalLayoutGroup>().GetComponent<RectTransform>();
-                        scrollRect.sizeDelta = new Vector2(400 * (misslePanels.Count - firedMissles), 0);
+                        scrollRect.sizeDelta = new Vector2(400 * (misslePanels.Count - firedMissles) + 100, 0);
+                        scrollGroup.transform.DOScale(0.5f, GameConstants.scrollFade/2).SetEase(Ease.InOutBack);
                         scrollGroup.DOFade(0f, GameConstants.scrollFade/2);
                     });
                 }
@@ -187,6 +217,7 @@ public class GameManager : MonoBehaviour
                 break;
             case GameState.AttackComplete:
                 {
+                    SlowMoStop();
                 }
                 break;
         }
@@ -216,6 +247,10 @@ public class GameManager : MonoBehaviour
                 break;
             case GameState.AttackComplete:
                 {
+                    if(attackCameraMoveComplete)
+                    {
+                        cameraTransform.LookAt(hitTarget);
+                    }
                 }
                 break;
         }
@@ -287,9 +322,16 @@ public class GameManager : MonoBehaviour
         return Color.gray;
     }
 
-    public void CameraShake(float duration, float strength)
+    public void OnHit(Transform targetHit, float duration, float strength)
     {
-        Camera.main.DOShakePosition(duration, strength * 3, 10, 90, true);
+        SwitchState(GameState.AttackComplete);
+
+        hitTarget = targetHit;
+        attackCameraMoveComplete = false;
+
+        Camera.main.DOShakePosition(duration, strength * 3, 10, 90, true).OnComplete(() => {
+            SlowMoStart();
+        });
     }
 
     public void ReturnEffectToPool(GameObject effectToStore, GameConstants.EffectTypes effectType)

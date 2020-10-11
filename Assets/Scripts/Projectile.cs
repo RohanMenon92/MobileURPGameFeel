@@ -200,16 +200,17 @@ public class Projectile : MonoBehaviour
 
     void DestroyBullet()
     {
-        ignitionEffect.GetComponent<IgnitionScript>().FadeAway();
-        gameManager.WaitAndSwitchState(GameState.Select, 1f);
+        gameManager.WaitAndSwitchState(GameState.Select, 2f);
         gameObject.SetActive(false);
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        // On hitting the target
         bool largeShake = projectileType == ProjectileType.Exploder || projectileType == ProjectileType.Imploder;
-        gameManager.CameraShake(largeShake ? 1.0f : 0.25f, largeShake ? 0.75f : 0.25f);
-        gameManager.SwitchState(GameState.AttackComplete);
+        gameManager.OnHit(other.transform, largeShake ? 1.0f : 0.25f, largeShake ? 0.75f : 0.25f);
+        
+        // Projectile Type Specific hit
         switch (projectileType)
         {
             case ProjectileType.Puller:
