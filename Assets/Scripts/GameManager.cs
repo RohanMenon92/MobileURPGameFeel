@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 using static GameConstants;
 using DG.Tweening;
 using System;
+using UnityEngine.UI;
 
 public enum GameState
 {
@@ -27,6 +28,7 @@ public class GameManager : MonoBehaviour
 
     GameState currentState = GameState.Select;
     int currentFire;
+    int firedMissles = 0;
     Transform cameraTransform;
 
     // Start is called before the first frame update
@@ -128,8 +130,11 @@ public class GameManager : MonoBehaviour
                 {
                     scrollGroup.interactable = false;
                     misslePanels[currentFire].DOFade(0f, GameConstants.scrollFade / 2).OnComplete(() => {
-                        scrollGroup.DOFade(0f, GameConstants.scrollFade/2);
+                        // Fade main section on complete and resize horizontal layout
                         misslePanels[currentFire].gameObject.SetActive(false);
+                        RectTransform scrollRect = scrollGroup.GetComponentInChildren<HorizontalLayoutGroup>().GetComponent<RectTransform>();
+                        scrollRect.sizeDelta = new Vector2(400 * (misslePanels.Count - firedMissles), 170);
+                        scrollGroup.DOFade(0f, GameConstants.scrollFade/2);
                     });
                 }
                 break;
@@ -213,7 +218,7 @@ public class GameManager : MonoBehaviour
 
     public void FireAway(int index)
     {
-        Debug.Log(currentFire);
+        firedMissles++;
         currentFire = index;
         SwitchState(GameState.WindUp);
     }
