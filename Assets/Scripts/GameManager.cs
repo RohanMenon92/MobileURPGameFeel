@@ -46,6 +46,19 @@ public class GameManager : MonoBehaviour
     }
 
     // FSM region
+
+    public void WaitAndSwitchState(GameState newState, float delay)
+    {
+        StartCoroutine(WaitStateSwitch(newState, delay));
+    }
+
+    IEnumerator WaitStateSwitch(GameState newState, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        SwitchState(newState);
+    }
+
     public void SwitchState(GameState newState)
     {
         bool switchAllowed = false;
@@ -118,6 +131,7 @@ public class GameManager : MonoBehaviour
                     cameraTransform.DORotate(GameConstants.competeARot, GameConstants.windUpTransition).OnComplete(() => {
                         SwitchState(GameState.Select);
                     });
+
                 }
                 break;
         }
@@ -133,7 +147,7 @@ public class GameManager : MonoBehaviour
                         // Fade main section on complete and resize horizontal layout
                         misslePanels[currentFire].gameObject.SetActive(false);
                         RectTransform scrollRect = scrollGroup.GetComponentInChildren<HorizontalLayoutGroup>().GetComponent<RectTransform>();
-                        scrollRect.sizeDelta = new Vector2(400 * (misslePanels.Count - firedMissles), 170);
+                        scrollRect.sizeDelta = new Vector2(400 * (misslePanels.Count - firedMissles), 160);
                         scrollGroup.DOFade(0f, GameConstants.scrollFade/2);
                     });
                 }

@@ -162,7 +162,7 @@ public class Projectile : MonoBehaviour
 
     void DestroyBullet()
     {
-        gameManager.SwitchState(GameState.AttackComplete);
+        gameManager.WaitAndSwitchState(GameState.AttackComplete, 1f);
         gameObject.SetActive(false);
     }
 
