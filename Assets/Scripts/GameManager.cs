@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using static GameConstants;
 
 public class GameManager : MonoBehaviour
@@ -34,5 +35,10 @@ public class GameManager : MonoBehaviour
     public void FireAway(int index)
     {
         missileObjects[index].GetComponent<Projectile>().FireMyself();    
+    }
+
+    public void ReloadScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);   
     }
 }
