@@ -99,9 +99,12 @@ public class Projectile : MonoBehaviour
         ragDoll.transform.rotation = refTransform.rotation;
         ragDoll.transform.localScale = refTransform.localScale;
 
+        Debug.Log("Exploding");
+        // lower explosion point to make character bounce up
+        Vector3 explosionPoint = transform.position - new Vector3(0f, 1f, 0f);
         foreach (Rigidbody rb in ragDoll.GetComponentsInChildren<Rigidbody>())
         {
-            rb.AddExplosionForce(GameConstants.explosionForce, gameObject.transform.position, 10.0f, 0.0f, ForceMode.Impulse);
+            rb.AddForce((other.transform.position - explosionPoint).normalized * GameConstants.explosionForce, ForceMode.Impulse); ;
         }
         Destroy(gameObject);
     }
