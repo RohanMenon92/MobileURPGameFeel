@@ -59,6 +59,8 @@ public class Projectile : MonoBehaviour
 
     void CreatePull(Collider other)
     {
+        ImploderHitEffect(other.transform.up, Vector3.one * 0.5f);
+
         Transform refTransform = other.transform;
         Destroy(other.gameObject);
         GameObject ragDoll = gameManager.GetRagdollInstance();
@@ -87,12 +89,16 @@ public class Projectile : MonoBehaviour
         //    rb.AddForce((other.transform.position - transform.position).normalized * GameConstants.pushForce, ForceMode.Impulse);
         //}
 
+        ExploderHitEffect(other.transform.up, Vector3.one * 0.5f);
+
         other.GetComponent<Rigidbody>().AddForce((other.transform.position - transform.position).normalized * GameConstants.pushForce, ForceMode.Impulse);
         DestroyBullet();
     }
 
     void CreateExplode(Collider other)
     {
+        ExploderHitEffect(other.transform.position, Vector3.one * 1.5f);
+
         Transform refTransform = other.transform;
         Destroy(other.gameObject);
         GameObject ragDoll = gameManager.GetRagdollInstance();
@@ -111,6 +117,8 @@ public class Projectile : MonoBehaviour
 
     void CreateImplode(Collider other)
     {
+        ImploderHitEffect(other.transform.position, Vector3.one * 1.5f);
+
         Transform refTransform = other.transform;
         Destroy(other.gameObject);
         GameObject ragDoll = gameManager.GetRagdollInstance();
@@ -131,6 +139,8 @@ public class Projectile : MonoBehaviour
 
     void CreateMultiHit(Collider other)
     {
+        MultiHitEffect(transform.position, other.transform.position, Vector3.one * 0.75f);
+
         StartCoroutine(MultiHitRoutine(Random.Range(4, 8), other.GetComponent<Rigidbody>()));
         // Disable Collider
         _rigidbody.velocity = Vector3.zero;
@@ -143,7 +153,12 @@ public class Projectile : MonoBehaviour
         // Push multiple times
         while (hits > currentHits)
         {
-            rb.AddForce((transform.position - rb.transform.position).normalized * GameConstants.multiHitForce, ForceMode.Impulse);
+            Vector3 hitDir = new Vector3(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
+            // Adding Effect
+            MultiHitEffect(rb.transform.position, hitDir, Vector3.one * 0.25f);
+
+            // Adding Force
+            rb.AddForce((rb.transform.position - hitDir).normalized * GameConstants.multiHitForce, ForceMode.Impulse);
             yield return new WaitForSeconds(GameConstants.multiHitTime);
             currentHits++;
         }
@@ -161,6 +176,28 @@ public class Projectile : MonoBehaviour
         }
     }
 
+    void ImploderHitEffect(Vector3 lookAt, Vector3 scale)
+    {
+        GameObject effect = gameManager.BeginEffect(EffectTypes.Implosion, transform.position, lookAt);
+        effect.transform.localScale = scale;
+        effect.GetComponent<ImplosionScript>().SetColor(gameManager.GetColor(projectileColour));
+    }
+
+    void ExploderHitEffect(Vector3 lookAt, Vector3 scale)
+    {
+        GameObject effect = gameManager.BeginEffect(EffectTypes.Explosion, transform.position, lookAt);
+        effect.transform.localScale = scale;
+        effect.GetComponent<ExplosionScript>().SetColor(gameManager.GetColor(projectileColour));
+
+    }
+
+    void MultiHitEffect(Vector3 startPos, Vector3 lookAt, Vector3 scale)
+    {
+        GameObject effect = gameManager.BeginEffect(EffectTypes.Ignition, startPos, lookAt);
+        effect.transform.localScale = scale;
+        effect.GetComponent<IgnitionScript>().SetColor(gameManager.GetColor(projectileColour));
+    }
+
     void DestroyBullet()
     {
         ignitionEffect.GetComponent<IgnitionScript>().FadeAway();
@@ -170,9 +207,10 @@ public class Projectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        gameManager.CameraShake(1.0f, 0.5f);
+        bool largeShake = projectileType == ProjectileType.Exploder || projectileType == ProjectileType.Imploder;
+        gameManager.CameraShake(largeShake ? 1.0f : 0.25f, largeShake ? 0.75f : 0.25f);
 
-        switch(projectileType)
+        switch (projectileType)
         {
             case ProjectileType.Puller:
                 CreatePull(other);

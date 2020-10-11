@@ -45,18 +45,18 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i <= GameConstants.EffectPoolSize; i++)
         {
-            GameObject newShieldhit = Instantiate(ignitionPrefab, ignitionEffectsPool);
-            newShieldhit.SetActive(false);
+            GameObject ignition = Instantiate(ignitionPrefab, ignitionEffectsPool);
+            ignition.SetActive(false);
         }
         for (int i = 0; i <= GameConstants.EffectPoolSize; i++)
         {
-            GameObject newBulletHit = Instantiate(explosionPrefab, explosionEffectsPool);
-            newBulletHit.SetActive(false);
+            GameObject explosion = Instantiate(explosionPrefab, explosionEffectsPool);
+            explosion.SetActive(false);
         }
         for (int i = 0; i <= GameConstants.EffectPoolSize; i++)
         {
-            GameObject smokeEffect = Instantiate(implosionPrefab, implosionEffectsPool);
-            smokeEffect.SetActive(false);
+            GameObject implosion = Instantiate(implosionPrefab, implosionEffectsPool);
+            implosion.SetActive(false);
         }
 
         cameraTransform = FindObjectOfType<Camera>().transform.parent;
